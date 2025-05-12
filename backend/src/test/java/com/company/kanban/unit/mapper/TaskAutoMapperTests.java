@@ -1,5 +1,6 @@
-package com.company.kanban.mapper;
+package com.company.kanban.unit.mapper;
 
+import com.company.kanban.mapper.TaskAutoMapper;
 import com.company.kanban.model.dto.TaskDTO;
 import com.company.kanban.model.entity.Task;
 import com.company.kanban.model.enums.Priority;

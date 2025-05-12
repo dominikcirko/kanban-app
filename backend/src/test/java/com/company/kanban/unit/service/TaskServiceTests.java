@@ -1,4 +1,4 @@
-package com.company.kanban.service;
+package com.company.kanban.unit.service;
 
 import com.company.kanban.mapper.JsonMergePatch;
 import com.company.kanban.mapper.TaskDtoAssembler;
@@ -7,6 +7,7 @@ import com.company.kanban.model.entity.Task;
 import com.company.kanban.model.enums.Priority;
 import com.company.kanban.model.enums.Status;
 import com.company.kanban.repository.TaskRepository;
+import com.company.kanban.service.TaskServiceImpl;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
