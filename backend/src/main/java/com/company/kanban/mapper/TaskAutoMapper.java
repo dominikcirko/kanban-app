@@ -1,20 +1,20 @@
-package com.company.kanban.utils;
+package com.company.kanban.mapper;
 
 import com.company.kanban.model.dto.TaskDTO;
 import com.company.kanban.model.entity.Task;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-public class AutoMapper {
+public class TaskAutoMapper {
 
-    private AutoMapper() {}
+    private TaskAutoMapper() {}
 
     private static final ObjectMapper objectMapper = createCustomObjectMapper();
 
     private static ObjectMapper createCustomObjectMapper() {
         ObjectMapper mapper = new ObjectMapper();
 
-        //ignore unknown properties (links) during deserialization.
+        //ignore unknown properties (hateoas links) during deserialization
         mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         return mapper;
     }

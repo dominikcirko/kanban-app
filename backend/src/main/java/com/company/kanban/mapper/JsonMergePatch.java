@@ -1,12 +1,12 @@
-package com.company.kanban.utils;
+package com.company.kanban.mapper;
 
 import com.company.kanban.model.entity.Task;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.springframework.context.annotation.Configuration;
+import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 
-@Configuration
+@Component
 public class JsonMergePatch {
 
     private final ObjectMapper objectMapper;

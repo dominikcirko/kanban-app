@@ -5,5 +5,10 @@
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
         https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
 
+    <changeSet id="2" author="dominik">
+        <addColumn tableName="task">
+            <column name="version" type="bigint"/>
+        </addColumn>
+    </changeSet>
 
 </databaseChangeLog>

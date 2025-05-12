@@ -1,4 +1,7 @@
-FROM ubuntu:latest
-LABEL authors="domin"
+FROM eclipse-temurin:17-jdk-focal
 
-ENTRYPOINT ["top", "-b"]
+WORKDIR /app
+
+COPY target/*.jar app.jar
+
+ENTRYPOINT ["java", "-jar", "/app/app.jar"]
