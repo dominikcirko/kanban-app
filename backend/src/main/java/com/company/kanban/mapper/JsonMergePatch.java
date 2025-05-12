@@ -15,6 +15,7 @@ public class JsonMergePatch {
         this.objectMapper = objectMapper;
     }
 
+    //method for partially updating Task entity
     public Task mergePatchTask(Task existingTask, String patchJson) throws IOException {
         return objectMapper.readerForUpdating(existingTask)
                 .readValue(patchJson, Task.class);

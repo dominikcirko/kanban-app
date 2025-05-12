@@ -1,7 +1,4 @@
-FROM eclipse-temurin:17-jdk-focal
-
+FROM openjdk:24-jdk-oracle
 WORKDIR /app
-
 COPY target/*.jar app.jar
-
-ENTRYPOINT ["java", "-jar", "/app/app.jar"]
+ENTRYPOINT ["java", "-jar", "app.jar"]

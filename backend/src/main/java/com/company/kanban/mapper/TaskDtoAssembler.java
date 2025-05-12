@@ -15,20 +15,12 @@ public class TaskDtoAssembler extends RepresentationModelAssemblerSupport<Task, 
     public TaskDtoAssembler() {
         super(TaskController.class, TaskDTO.class);
     }
+
+    //use TaskAutoMapper to convert to TaskDTO, then add hateoas links to payload
     @Override
     public TaskDTO toModel(Task entity) {
         TaskDTO taskDTO = TaskAutoMapper.convertToDto(entity);
         taskDTO.add(linkTo(methodOn(TaskController.class).getTaskById(entity.getId())).withSelfRel());
         return taskDTO;
     }
-
-//    @Override
-//    public CollectionModel<TaskDTO> toCollectionModel(Iterable<? extends Task> entities) {
-//        List<TaskDTO> dtoList = StreamSupport.stream(entities.spliterator(), false)
-//                .map(this::toModel)
-//                .toList();
-//
-//        return CollectionModel.of(dtoList,
-//                linkTo(methodOn(TaskController.class).getAllTasks()).withSelfRel());
-//    }
 }
