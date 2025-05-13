@@ -1,5 +1,6 @@
 package com.company.kanban.service;
 
+import com.company.kanban.controller.TaskWebSocketController;
 import com.company.kanban.model.dto.TaskDTO;
 import com.company.kanban.model.entity.Task;
 import com.company.kanban.model.enums.Status;
@@ -26,11 +27,16 @@ public class TaskServiceImpl implements TaskService {
     private final TaskRepository taskRepository;
     private final TaskDtoAssembler taskDtoAssembler;
     private final JsonMergePatch jsonMergePatch;
+    private final TaskWebSocketController webSocketController;
 
-    public TaskServiceImpl(TaskRepository taskRepository, JsonMergePatch jsonMergePatch, TaskDtoAssembler taskDtoAssembler) {
+    public TaskServiceImpl(TaskRepository taskRepository,
+                           JsonMergePatch jsonMergePatch,
+                           TaskDtoAssembler taskDtoAssembler,
+                           TaskWebSocketController webSocketController) {
         this.taskRepository = taskRepository;
         this.jsonMergePatch = jsonMergePatch;
         this.taskDtoAssembler = taskDtoAssembler;
+        this.webSocketController = webSocketController;
     }
 
     @Override
@@ -55,14 +61,18 @@ public class TaskServiceImpl implements TaskService {
     @Override
     public TaskDTO createTask(Task task) {
         Task savedTask = taskRepository.save(task);
-        return taskDtoAssembler.toModel(savedTask);
+        TaskDTO taskDTO = taskDtoAssembler.toModel(savedTask);
+        webSocketController.notifyTaskCreated(taskDTO);
+        return taskDTO;
     }
 
     @Override
     public TaskDTO updateTask(Task task) {
         try {
             Task savedTask = taskRepository.save(task);
-            return taskDtoAssembler.toModel(savedTask);
+            TaskDTO taskDTO = taskDtoAssembler.toModel(savedTask);
+            webSocketController.notifyTaskUpdated(taskDTO);
+            return taskDTO;
         } catch (OptimisticLockingFailureException | OptimisticLockException e) {
             throw new OptimisticLockException("Task was updated by another user. Please reload and try again.");
         }
@@ -73,7 +83,9 @@ public class TaskServiceImpl implements TaskService {
         try {
             Task updatedTask = jsonMergePatch.mergePatchTask(task, jsonPartialUpdate);
             Task savedTask = taskRepository.save(updatedTask);
-            return taskDtoAssembler.toModel(savedTask);
+            TaskDTO taskDTO = taskDtoAssembler.toModel(savedTask);
+            webSocketController.notifyTaskUpdated(taskDTO);
+            return taskDTO;
         } catch (OptimisticLockingFailureException | OptimisticLockException e) {
             throw new OptimisticLockException("Task was updated during your edit. Please reload and try again.");
         } catch (IOException e) {
@@ -85,6 +97,7 @@ public class TaskServiceImpl implements TaskService {
     public void deleteTask(Long id) {
         try {
             taskRepository.deleteById(id);
+            webSocketController.notifyTaskDeleted(id);
         } catch (OptimisticLockingFailureException | OptimisticLockException e) {
             throw new OptimisticLockException("Task was modified before deletion. Please refresh and try again.");
         }
