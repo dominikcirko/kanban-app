@@ -52,7 +52,6 @@ public class TaskServiceImpl implements TaskService {
 
     @Override
     @Transactional(readOnly = true)
-    @CacheEvict(value = "tasks", allEntries = true)
     @Cacheable(value = "tasks", key = "{#status, #priority, #pageable.pageNumber, #pageable.pageSize}")
     public Page<TaskDTO> getTasks(Status status, Priority priority, Pageable pageable) {
         Page<Task> taskEntitiesPage;
@@ -85,6 +84,7 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
+    @CacheEvict(value = "tasks", allEntries = true)
     public TaskDTO createTask(Task task) {
         Task savedTask = taskRepository.save(task);
         TaskDTO taskDTO = taskDtoAssembler.toModel(savedTask);
@@ -93,6 +93,7 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
+    @CacheEvict(value = "tasks", allEntries = true)
     public TaskDTO updateTask(Task task) {
         try {
             Task savedTask = taskRepository.save(task);
@@ -105,6 +106,7 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
+    @CacheEvict(value = "tasks", allEntries = true)
     public TaskDTO partialUpdateTask(Task task, String jsonPartialUpdate) {
         try {
             Task updatedTask = jsonMergePatch.mergePatchTask(task, jsonPartialUpdate);
@@ -120,6 +122,7 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
+    @CacheEvict(value = "tasks", allEntries = true)
     public void deleteTask(Long id) {
         try {
             taskRepository.deleteById(id);
@@ -130,6 +133,7 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
+    @CacheEvict(value = "tasks", allEntries = true)
     public Pageable buildPageable(int page, int size, String sortParam){
 
         if (sortParam != null && !sortParam.isEmpty()) {

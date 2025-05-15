@@ -19,7 +19,6 @@ const LoginDialog: React.FC<LoginDialogProps> = ({ open, onClose }) => {
         setError(null);
         try {
             const response = await authApi.login(username, password);
-            // Extract JWT from Authorization header and strip 'Bearer '
             const authHeader = response.headers['authorization'] || response.headers['Authorization'];
             let token = null;
             if (authHeader && authHeader.startsWith('Bearer ')) {

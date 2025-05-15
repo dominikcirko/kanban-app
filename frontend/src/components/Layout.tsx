@@ -24,15 +24,12 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
-    // State for dialog visibility
     const [loginOpen, setLoginOpen] = useState(false);
     const [registerOpen, setRegisterOpen] = useState(false);
 
-    // Auth state
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     useEffect(() => {
         setIsAuthenticated(!!localStorage.getItem('jwt'));
-        // Optionally, listen to storage events for multi-tab sync
         const onStorage = () => setIsAuthenticated(!!localStorage.getItem('jwt'));
         window.addEventListener('storage', onStorage);
         return () => window.removeEventListener('storage', onStorage);
@@ -41,7 +38,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
     const handleLogout = () => {
         localStorage.removeItem('jwt');
         setIsAuthenticated(false);
-        window.location.reload(); // Simple reload to reset state
+        window.location.reload();
     };
 
     return (
@@ -107,7 +104,6 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
                         </Stack>
                     </Toolbar>
                 </AppBar>
-                {/* Dialogs for login/register */}
                 <LoginDialog open={loginOpen} onClose={() => setLoginOpen(false)} />
                 <RegisterDialog open={registerOpen} onClose={() => setRegisterOpen(false)} />
                 <Box 

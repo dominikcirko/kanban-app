@@ -8,10 +8,9 @@ const api = axios.create({
     headers: {
         'Content-Type': 'application/json',
     },
-    withCredentials: true  // Add this to handle cookies
+    withCredentials: true  
 });
 
-// Attach JWT to all requests if present
 api.interceptors.request.use(
     (config) => {
         const token = localStorage.getItem('jwt');
@@ -24,12 +23,10 @@ api.interceptors.request.use(
     (error) => Promise.reject(error)
 );
 
-// Add response interceptor to handle token expiration
 api.interceptors.response.use(
     (response) => response,
     (error) => {
         if (error.response?.status === 403 && error.response?.data?.message?.includes('expired')) {
-            // Only redirect if token is actually expired
             localStorage.removeItem('jwt');
             window.location.href = '/login';
         }
@@ -102,13 +99,11 @@ export const taskApi = {
 
 export const authApi = {
     login: async (username: string, password: string) => {
-        // The backend expects a User object; adjust field names if needed
         const response = await axios.post('http://localhost:8080/auth/login', {
             username,
             password,
         }, {
             headers: { 'Content-Type': 'application/json' },
-            // withCredentials: true // Uncomment if backend uses cookies
         });
         return response;
     },

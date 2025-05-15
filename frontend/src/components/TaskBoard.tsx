@@ -21,7 +21,6 @@ export const TaskBoard: React.FC<TaskBoardProps> = ({
 }) => {
     console.log('TaskBoard received tasks:', tasks);
     
-    // Group tasks by status
     const tasksByStatus = tasks.reduce((acc, task) => {
         if (!acc[task.status]) {
             acc[task.status] = [];
@@ -30,7 +29,6 @@ export const TaskBoard: React.FC<TaskBoardProps> = ({
         return acc;
     }, {} as Record<Status, Task[]>);
 
-    // Ensure all status columns exist
     Object.values(Status).forEach(status => {
         if (!tasksByStatus[status]) {
             tasksByStatus[status] = [];

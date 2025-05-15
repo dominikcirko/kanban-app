@@ -37,9 +37,6 @@ public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        //getInputStream: retrieve body of request in binary
-        //ObjectMapper: perform a deserialization process
-        //map incoming user data (request.getInputStream()) into the properties of a user object (User.class)
     }
 
     @Override
