@@ -1,12 +1,14 @@
-package com.company.kanban.service;
+package com.company.kanban.service.implementations;
 
 import com.company.kanban.controller.TaskWebSocketController;
 import com.company.kanban.model.dto.TaskDTO;
 import com.company.kanban.model.entity.Task;
+import com.company.kanban.model.enums.Priority;
 import com.company.kanban.model.enums.Status;
 import com.company.kanban.repository.TaskRepository;
 import com.company.kanban.mapper.JsonMergePatch;
 import com.company.kanban.mapper.TaskDtoAssembler;
+import com.company.kanban.service.interfaces.TaskService;
 import jakarta.persistence.OptimisticLockException;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.data.domain.Page;
@@ -41,13 +43,18 @@ public class TaskServiceImpl implements TaskService {
 
     @Override
     @Transactional(readOnly = true)
-    public Page<TaskDTO> getTasks(Status status, Pageable pageable) {
+    public Page<TaskDTO> getTasks(Status status, Priority priority, Pageable pageable) {
         Page<Task> taskEntitiesPage;
 
-        if (status != null)
+        if (status != null && priority != null) {
+            taskEntitiesPage = taskRepository.findByStatusAndPriority(status, priority, pageable);
+        } else if (status != null) {
             taskEntitiesPage = taskRepository.findByStatus(status, pageable);
-         else
+        } else if (priority != null) {
+            taskEntitiesPage = taskRepository.findByPriority(priority, pageable);
+        } else {
             taskEntitiesPage = taskRepository.findAll(pageable);
+        }
 
         return taskEntitiesPage.map(taskDtoAssembler::toModel);
     }

@@ -2,9 +2,11 @@ package com.company.kanban.controller;
 
 import com.company.kanban.model.dto.TaskDTO;
 import com.company.kanban.model.entity.Task;
+import com.company.kanban.model.enums.Priority;
 import com.company.kanban.model.enums.Status;
-import com.company.kanban.service.TaskService;
+import com.company.kanban.service.interfaces.TaskService;
 import com.company.kanban.mapper.TaskAutoMapper;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -19,6 +21,7 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @RestController
+@SecurityRequirement(name = "bearerAuth")
 @RequestMapping("/api/tasks")
 public class TaskController {
 
@@ -31,13 +34,13 @@ public class TaskController {
     @GetMapping
     public ResponseEntity<Page<TaskDTO>> getAllTasks(
             @RequestParam(required = false) Status status,
+            @RequestParam(required = false) Priority priority,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(name = "sort", required = false) String sortParam)
     {
-
         Pageable pageable = taskService.buildPageable(page, size, sortParam);
-        Page<TaskDTO> tasksPage = taskService.getTasks(status, pageable);
+        Page<TaskDTO> tasksPage = taskService.getTasks(status, priority, pageable);
         return ResponseEntity.ok(tasksPage);
     }
 

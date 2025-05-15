@@ -6,26 +6,7 @@
         https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
 
 
-    <changeSet id="1" author="dominik">
-        <createTable tableName="task">
-            <column name="id" type="bigint" autoIncrement="true">
-                <constraints primaryKey="true" nullable="false"/>
-            </column>
-            <column name="title" type="varchar(255)">
-                <constraints nullable="false"/>
-            </column>
-            <column name="description" type="text">
-                <constraints nullable="true"/>
-            </column>
-            <column name="status" type="varchar(20)">
-                <constraints nullable="false"/>
-            </column>
-            <column name="priority" type="varchar(20)">
-                <constraints nullable="false"/>
-            </column>
-        </createTable>
-    </changeSet>
-
-    <include file="db/changelog/changelog-01.xml"/>
+    <include file="db/changelog/changelog-task.xml"/>
+    <include file="db/changelog/changelog-user.xml"/>
 
 </databaseChangeLog>

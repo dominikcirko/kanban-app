@@ -1,7 +1,8 @@
-package com.company.kanban.service;
+package com.company.kanban.service.interfaces;
 
 import com.company.kanban.model.dto.TaskDTO;
 import com.company.kanban.model.entity.Task;
+import com.company.kanban.model.enums.Priority;
 import com.company.kanban.model.enums.Status;
 import jakarta.persistence.OptimisticLockException;
 import org.springframework.dao.OptimisticLockingFailureException;
@@ -9,12 +10,11 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.Optional;
 
 public interface TaskService {
 
-    Page<TaskDTO> getTasks(Status status, Pageable pageable);
+    Page<TaskDTO> getTasks(Status status, Priority priority, Pageable pageable);
 
     Optional<TaskDTO> getTaskById(Long id);
 

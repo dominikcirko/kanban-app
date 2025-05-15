@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { Task, Status, PageResponse } from '../types/task';
+import { Task, Status, PageResponse, Priority } from '../types/task';
 
 const API_BASE_URL = 'http://localhost:8080/api';
 
@@ -11,9 +11,10 @@ const api = axios.create({
 });
 
 export const taskApi = {
-    getTasks: async (status?: Status, page = 0, size = 10, sort?: string) => {
+    getTasks: async (status?: Status, page = 0, size = 10, sort?: string, priority?: Priority) => {
         const params = new URLSearchParams();
         if (status) params.append('status', status);
+        if (priority) params.append('priority', priority);
         params.append('page', page.toString());
         params.append('size', size.toString());
         if (sort) params.append('sort', sort);
