@@ -4,7 +4,6 @@ import com.company.kanban.model.entity.User;
 import com.company.kanban.service.interfaces.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import io.swagger.v3.oas.models.OpenAPI;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -23,7 +22,7 @@ public class AuthController {
     @PostMapping("/register")
     public ResponseEntity<User> register(@RequestBody @Valid User user) {
         User savedUser = userService.saveUser(user);
-        savedUser.setPassword(null); // Hide password in response
+        savedUser.setPassword(null);
         return new ResponseEntity<>(savedUser, HttpStatus.CREATED);
     }
 

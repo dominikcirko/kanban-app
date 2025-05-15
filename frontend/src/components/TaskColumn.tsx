@@ -1,5 +1,5 @@
 import React from 'react';
-import { Paper, Typography, Box, Chip } from '@mui/material';
+import { Box, Paper, Typography, Chip } from '@mui/material';
 import { Droppable } from '@hello-pangea/dnd';
 import { Task, Status } from '../types/task';
 import { TaskCard } from './TaskCard';
@@ -33,14 +33,17 @@ const statusTitles = {
 };
 
 export const TaskColumn: React.FC<TaskColumnProps> = ({ status, tasks, onEdit, onDelete }) => {
+    console.log(`TaskColumn ${status} received tasks:`, tasks);
+
     return (
         <Paper
+            elevation={3}
             sx={{
                 p: 2,
                 height: '100%',
                 display: 'flex',
                 flexDirection: 'column',
-                backgroundColor: statusColors[status].bg,
+                bgcolor: 'background.default',
             }}
         >
             <Box 
@@ -71,23 +74,18 @@ export const TaskColumn: React.FC<TaskColumnProps> = ({ status, tasks, onEdit, o
                 />
             </Box>
             <Droppable droppableId={status}>
-                {(provided) => (
+                {(provided, snapshot) => (
                     <Box
                         ref={provided.innerRef}
                         {...provided.droppableProps}
                         sx={{
                             flexGrow: 1,
+                            minHeight: 0,
                             overflowY: 'auto',
-                            '&::-webkit-scrollbar': {
-                                width: '8px',
-                            },
-                            '&::-webkit-scrollbar-track': {
-                                backgroundColor: 'transparent',
-                            },
-                            '&::-webkit-scrollbar-thumb': {
-                                backgroundColor: 'rgba(0,0,0,0.1)',
-                                borderRadius: '4px',
-                            },
+                            bgcolor: snapshot.isDraggingOver ? 'action.hover' : 'transparent',
+                            transition: 'background-color 0.2s ease',
+                            borderRadius: 1,
+                            p: 1
                         }}
                     >
                         {tasks.map((task, index) => (

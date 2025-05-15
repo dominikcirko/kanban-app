@@ -40,7 +40,7 @@ public class UserServiceImpl implements UserService {
         userRepository.deleteById(id);
     }
 
-    private static User unwrapUser(Optional<User> entity) {
+    public static User unwrapUser(Optional<User> entity) {
         if (entity.isPresent()) return entity.get();
         else throw new EntityNotFoundException();
     }

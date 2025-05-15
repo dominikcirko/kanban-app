@@ -1,5 +1,6 @@
 package com.company.kanban.service.implementations;
 
+import ch.qos.logback.classic.Logger;
 import com.company.kanban.controller.TaskWebSocketController;
 import com.company.kanban.model.dto.TaskDTO;
 import com.company.kanban.model.entity.Task;
@@ -10,6 +11,8 @@ import com.company.kanban.mapper.JsonMergePatch;
 import com.company.kanban.mapper.TaskDtoAssembler;
 import com.company.kanban.service.interfaces.TaskService;
 import jakarta.persistence.OptimisticLockException;
+import org.slf4j.LoggerFactory;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -22,6 +25,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicLong;
 
 @Service
 public class TaskServiceImpl implements TaskService {
@@ -30,6 +34,10 @@ public class TaskServiceImpl implements TaskService {
     private final TaskDtoAssembler taskDtoAssembler;
     private final JsonMergePatch jsonMergePatch;
     private final TaskWebSocketController webSocketController;
+
+    private static final Logger log = (Logger) LoggerFactory.getLogger(TaskServiceImpl.class);
+    private final AtomicLong cacheHits = new AtomicLong(0);
+    private final AtomicLong cacheMisses = new AtomicLong(0);
 
     public TaskServiceImpl(TaskRepository taskRepository,
                            JsonMergePatch jsonMergePatch,
@@ -43,8 +51,12 @@ public class TaskServiceImpl implements TaskService {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "tasks", key = "{#status, #priority, #pageable.pageNumber, #pageable.pageSize}")
     public Page<TaskDTO> getTasks(Status status, Priority priority, Pageable pageable) {
         Page<Task> taskEntitiesPage;
+        long startTime = System.currentTimeMillis();
+
+        long missCount = cacheMisses.incrementAndGet();
 
         if (status != null && priority != null) {
             taskEntitiesPage = taskRepository.findByStatusAndPriority(status, priority, pageable);
@@ -55,6 +67,11 @@ public class TaskServiceImpl implements TaskService {
         } else {
             taskEntitiesPage = taskRepository.findAll(pageable);
         }
+
+        log.info("Cache miss - Fetching tasks from database for status={}, priority={}", status, priority);
+        long endTime = System.currentTimeMillis();
+        log.info("DATABASE ACCESS: Fetched tasks in {}ms (Total cache misses: {}, params: status={}, priority={})",
+                (endTime - startTime), missCount, status, priority);
 
         return taskEntitiesPage.map(taskDtoAssembler::toModel);
     }

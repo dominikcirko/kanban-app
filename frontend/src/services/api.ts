@@ -47,22 +47,32 @@ export const taskApi = {
     },
 
     updateTask: async (id: number, task: Partial<Task>) => {
+        const token = localStorage.getItem('jwt');
+        console.log('JWT about to be sent (PUT):', token);
         const response = await api.put<Task>(`/tasks/${id}`, task, {
             headers: {
-                ...api.defaults.headers.common,
+                'Authorization': token ? `Bearer ${token}` : '',
                 'Content-Type': 'application/json',
             },
         });
         return response.data;
     },
 
-    partialUpdateTask: async (id: number, patch: any) => {
+    partialUpdateTask: async (id: number, patch: Partial<Task>) => {
+        const token = localStorage.getItem('jwt');
+        console.log('--- PATCH REQUEST DEBUG ---');
+        console.log('Task ID:', id);
+        console.log('Patch payload:', JSON.stringify(patch));
+        console.log('JWT:', token);
+        
         const response = await api.patch<Task>(`/tasks/${id}`, patch, {
             headers: {
-                ...api.defaults.headers.common,
-                'Content-Type': 'application/mergepatch+json',
-            },
+                'Authorization': token ? `Bearer ${token}` : '',
+                'Content-Type': 'application/mergepatch+json'
+            }
         });
+        
+        console.log('PATCH Response:', response.data);
         return response.data;
     },
 
