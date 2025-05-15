@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     AppBar,
     Box,
@@ -27,6 +27,22 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
     // State for dialog visibility
     const [loginOpen, setLoginOpen] = useState(false);
     const [registerOpen, setRegisterOpen] = useState(false);
+
+    // Auth state
+    const [isAuthenticated, setIsAuthenticated] = useState(false);
+    useEffect(() => {
+        setIsAuthenticated(!!localStorage.getItem('jwt'));
+        // Optionally, listen to storage events for multi-tab sync
+        const onStorage = () => setIsAuthenticated(!!localStorage.getItem('jwt'));
+        window.addEventListener('storage', onStorage);
+        return () => window.removeEventListener('storage', onStorage);
+    }, []);
+
+    const handleLogout = () => {
+        localStorage.removeItem('jwt');
+        setIsAuthenticated(false);
+        window.location.reload(); // Simple reload to reset state
+    };
 
     return (
         <Box sx={{ display: 'flex', minHeight: '100vh' }}>
@@ -65,21 +81,29 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
                             Kanban Board
                         </Typography>
                         <Stack direction="row" spacing={2}>
-                            <Button
-                                variant="outlined"
-                                color="primary"
-                                startIcon={<AccountCircle />}
-                                onClick={() => setLoginOpen(true)}
-                            >
-                                Login
-                            </Button>
-                            <Button
-                                variant="contained"
-                                color="primary"
-                                onClick={() => setRegisterOpen(true)}
-                            >
-                                Register
-                            </Button>
+                            {isAuthenticated ? (
+                                <Button variant="outlined" color="secondary" onClick={handleLogout}>
+                                    Logout
+                                </Button>
+                            ) : (
+                                <>
+                                    <Button
+                                        variant="outlined"
+                                        color="primary"
+                                        startIcon={<AccountCircle />}
+                                        onClick={() => setLoginOpen(true)}
+                                    >
+                                        Login
+                                    </Button>
+                                    <Button
+                                        variant="contained"
+                                        color="primary"
+                                        onClick={() => setRegisterOpen(true)}
+                                    >
+                                        Register
+                                    </Button>
+                                </>
+                            )}
                         </Stack>
                     </Toolbar>
                 </AppBar>

@@ -28,6 +28,7 @@ const LoginDialog: React.FC<LoginDialogProps> = ({ open, onClose }) => {
             if (token) {
                 localStorage.setItem('jwt', token);
                 onClose();
+                window.location.reload();
             } else {
                 setError('No token received.');
             }

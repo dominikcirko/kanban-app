@@ -5,9 +5,10 @@ import { authApi } from '../services/api';
 interface RegisterDialogProps {
     open: boolean;
     onClose: () => void;
+    onRegistered?: () => void;
 }
 
-const RegisterDialog: React.FC<RegisterDialogProps> = ({ open, onClose }) => {
+const RegisterDialog: React.FC<RegisterDialogProps> = ({ open, onClose, onRegistered }) => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
@@ -33,6 +34,7 @@ const RegisterDialog: React.FC<RegisterDialogProps> = ({ open, onClose }) => {
             setTimeout(() => {
                 setSuccess(null);
                 onClose();
+                if (onRegistered) onRegistered();
             }, 1500);
         } catch (err: any) {
             setError(err.response?.data?.message || 'Registration failed');
