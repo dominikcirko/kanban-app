@@ -10,6 +10,19 @@ const api = axios.create({
     },
 });
 
+// Attach JWT to all requests if present
+api.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('jwt');
+    if (token) {
+      config.headers = config.headers || {};
+      config.headers['Authorization'] = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+
 export const taskApi = {
     getTasks: async (status?: Status, page = 0, size = 10, sort?: string, priority?: Priority) => {
         const params = new URLSearchParams();
@@ -34,13 +47,19 @@ export const taskApi = {
     },
 
     updateTask: async (id: number, task: Partial<Task>) => {
-        const response = await api.put<Task>(`/tasks/${id}`, task);
+        const response = await api.put<Task>(`/tasks/${id}`, task, {
+            headers: {
+                ...api.defaults.headers.common,
+                'Content-Type': 'application/json',
+            },
+        });
         return response.data;
     },
 
     partialUpdateTask: async (id: number, patch: any) => {
         const response = await api.patch<Task>(`/tasks/${id}`, patch, {
             headers: {
+                ...api.defaults.headers.common,
                 'Content-Type': 'application/mergepatch+json',
             },
         });
@@ -49,5 +68,28 @@ export const taskApi = {
 
     deleteTask: async (id: number) => {
         await api.delete(`/tasks/${id}`);
+    },
+};
+
+export const authApi = {
+    login: async (username: string, password: string) => {
+        // The backend expects a User object; adjust field names if needed
+        const response = await axios.post('http://localhost:8080/auth/login', {
+            username,
+            password,
+        }, {
+            headers: { 'Content-Type': 'application/json' },
+            // withCredentials: true // Uncomment if backend uses cookies
+        });
+        return response;
+    },
+    register: async (username: string, password: string) => {
+        const response = await axios.post('http://localhost:8080/auth/register', {
+            username,
+            password,
+        }, {
+            headers: { 'Content-Type': 'application/json' },
+        });
+        return response;
     },
 }; 

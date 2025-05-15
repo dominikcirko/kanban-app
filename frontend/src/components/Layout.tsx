@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
     AppBar,
     Box,
@@ -13,6 +13,8 @@ import {
 } from '@mui/material';
 import { Menu as MenuIcon, AccountCircle } from '@mui/icons-material';
 import { Sidebar } from './Sidebar';
+import LoginDialog from './LoginDialog';
+import RegisterDialog from './RegisterDialog';
 
 interface LayoutProps {
     children: React.ReactNode;
@@ -21,6 +23,10 @@ interface LayoutProps {
 export const Layout: React.FC<LayoutProps> = ({ children }) => {
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+
+    // State for dialog visibility
+    const [loginOpen, setLoginOpen] = useState(false);
+    const [registerOpen, setRegisterOpen] = useState(false);
 
     return (
         <Box sx={{ display: 'flex', minHeight: '100vh' }}>
@@ -63,18 +69,23 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
                                 variant="outlined"
                                 color="primary"
                                 startIcon={<AccountCircle />}
+                                onClick={() => setLoginOpen(true)}
                             >
                                 Login
                             </Button>
                             <Button
                                 variant="contained"
                                 color="primary"
+                                onClick={() => setRegisterOpen(true)}
                             >
                                 Register
                             </Button>
                         </Stack>
                     </Toolbar>
                 </AppBar>
+                {/* Dialogs for login/register */}
+                <LoginDialog open={loginOpen} onClose={() => setLoginOpen(false)} />
+                <RegisterDialog open={registerOpen} onClose={() => setRegisterOpen(false)} />
                 <Box 
                     component="main" 
                     sx={{ 
