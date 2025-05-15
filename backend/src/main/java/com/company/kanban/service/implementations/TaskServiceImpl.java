@@ -12,6 +12,7 @@ import com.company.kanban.mapper.TaskDtoAssembler;
 import com.company.kanban.service.interfaces.TaskService;
 import jakarta.persistence.OptimisticLockException;
 import org.slf4j.LoggerFactory;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.data.domain.Page;
@@ -51,6 +52,7 @@ public class TaskServiceImpl implements TaskService {
 
     @Override
     @Transactional(readOnly = true)
+    @CacheEvict(value = "tasks", allEntries = true)
     @Cacheable(value = "tasks", key = "{#status, #priority, #pageable.pageNumber, #pageable.pageSize}")
     public Page<TaskDTO> getTasks(Status status, Priority priority, Pageable pageable) {
         Page<Task> taskEntitiesPage;

@@ -14,14 +14,12 @@ export const TaskBoardContainer: React.FC = () => {
     const isUpdatingRef = useRef<number | null>(null);
     const pendingDragUpdateRef = useRef<{ taskId: number, newStatus: Status } | null>(null);
 
-    // Filtering, sorting, and pagination state
     const [statusFilter, setStatusFilter] = useState<string>('');
     const [priorityFilter, setPriorityFilter] = useState<string>('');
     const [sort, setSort] = useState<string>('id,asc');
     const [page, setPage] = useState<number>(1);
     const [size, setSize] = useState<number>(10);
 
-    // Local tasks state for optimistic updates
     const [localTasks, setLocalTasks] = useState<Task[]>([]);
     const [isDragging, setIsDragging] = useState(false);
 
@@ -38,7 +36,6 @@ export const TaskBoardContainer: React.FC = () => {
                 page: page - 1,
                 size
             });
-            // When no filter is selected, we want ALL tasks
             const result = await taskApi.getTasks(
                 statusFilter === '' ? undefined : (statusFilter as Status),
                 page - 1,
@@ -49,20 +46,19 @@ export const TaskBoardContainer: React.FC = () => {
             console.log('Fetched tasks:', result);
             return result;
         },
-        // Ensure we always get fresh data
         refetchOnMount: true,
         refetchOnWindowFocus: true,
+        gcTime: 0,
+        staleTime: 0
     });
 
-    // Update local tasks when data changes
     useEffect(() => {
-        if (tasksData?.content && !isDragging) {
-            console.log('Updating local tasks from server data');
+        if (tasksData?.content) {
+            console.log('Updating local tasks from server data:', tasksData.content);
             setLocalTasks(tasksData.content);
         }
-    }, [tasksData, isDragging]);
+    }, [tasksData]);
 
-    // Add debug logging for data state
     useEffect(() => {
         console.log('Current tasks data:', tasksData);
         console.log('Loading state:', isLoading);
@@ -79,6 +75,7 @@ export const TaskBoardContainer: React.FC = () => {
         mutationFn: taskApi.createTask,
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['tasks'] });
+            refetch();
         },
     });
 
@@ -87,6 +84,7 @@ export const TaskBoardContainer: React.FC = () => {
             taskApi.updateTask(id, task),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['tasks'] });
+            refetch();
         },
     });
 
@@ -94,19 +92,11 @@ export const TaskBoardContainer: React.FC = () => {
         mutationFn: ({ id, patch }: { id: number; patch: Partial<Task> }) =>
             taskApi.partialUpdateTask(id, patch),
         onSuccess: (updatedTask) => {
-            // Compare with our pending drag - if it matches, don't refetch
-            if (pendingDragUpdateRef.current && 
-                pendingDragUpdateRef.current.taskId === updatedTask.id &&
-                pendingDragUpdateRef.current.newStatus === updatedTask.status) {
-                console.log('Drag update confirmed by server, keeping optimistic UI update');
-                pendingDragUpdateRef.current = null;
-                setIsDragging(false);
-            } else {
-                // For other updates, force a refetch
-                queryClient.invalidateQueries({ 
-                    queryKey: ['tasks', statusFilter, priorityFilter, sort, page, size]
-                });
-            }
+            queryClient.invalidateQueries({ 
+                queryKey: ['tasks', statusFilter, priorityFilter, sort, page, size]
+            });
+            refetch();
+            setIsDragging(false);
         }
     });
 
@@ -114,30 +104,26 @@ export const TaskBoardContainer: React.FC = () => {
         mutationFn: taskApi.deleteTask,
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['tasks'] });
+            refetch();
         },
     });
 
-    // Handle websocket updates
     useEffect(() => {
         websocketService.connect();
         const unsubscribe = websocketService.subscribe((notification) => {
             console.log('Websocket notification received:', notification);
             
-            // Type guard to ensure notification.task is a valid Task
             if (!notification.task || typeof notification.task.id !== 'number') {
                 console.warn('Received invalid task notification:', notification);
                 return;
             }
             
-            // If a websocket update comes in for a task we're currently dragging, ignore it
             if (pendingDragUpdateRef.current && pendingDragUpdateRef.current.taskId === notification.task?.id) {
                 console.log('Ignoring websocket update for task being dragged:', notification.task.id);
                 return;
             }
             
-            // Otherwise, update our local state to match the notification
             if (notification.type === 'UPDATE') {
-                // Ensure we have a valid Task object from the notification
                 const updatedTask = notification.task as Task;
                 setLocalTasks(prevTasks => 
                     prevTasks.map(task => 
@@ -145,13 +131,10 @@ export const TaskBoardContainer: React.FC = () => {
                     )
                 );
             } else if (notification.type === 'CREATE' && notification.task) {
-                // Handle CREATE by adding the new task to our local state
                 setLocalTasks(prevTasks => [...prevTasks, notification.task as Task]);
             } else if (notification.type === 'DELETE' && notification.task) {
-                // Handle DELETE by removing the task from our local state
                 setLocalTasks(prevTasks => prevTasks.filter(task => task.id !== notification.task?.id));
             } else {
-                // For other notification types, just refetch
                 queryClient.invalidateQueries({ queryKey: ['tasks'] });
             }
         });
@@ -175,7 +158,6 @@ export const TaskBoardContainer: React.FC = () => {
             reason: result.reason
         });
 
-        // If dropped outside a droppable area
         if (!result.destination) {
             setIsDragging(false);
             return;
@@ -213,7 +195,6 @@ export const TaskBoardContainer: React.FC = () => {
     };
 
     const handleTaskDelete = (taskId: number) => {
-        // Optimistic delete
         setLocalTasks(prevTasks => 
             prevTasks.filter(task => task.id !== taskId)
         );
@@ -228,18 +209,15 @@ export const TaskBoardContainer: React.FC = () => {
 
     const handleDialogSave = (task: Partial<Task>) => {
         if (editingTask) {
-            // Update existing task
             updateTaskMutation.mutate({
                 id: editingTask.id,
                 task: { ...editingTask, ...task }
             });
         } else {
-            // Create new task
             createTaskMutation.mutate(task as Omit<Task, 'id' | 'createdAt' | 'updatedAt'>);
         }
     };
 
-    // Toolbar for filtering, sorting, and pagination
     const Toolbar = (
         <Paper elevation={0} sx={{ p: 2, mb: 2, backgroundColor: 'transparent' }}>
             <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems={{ xs: 'stretch', sm: 'center' }} justifyContent="space-between">
@@ -275,7 +253,7 @@ export const TaskBoardContainer: React.FC = () => {
                             label="Priority"
                             onChange={(e) => { 
                                 setPriorityFilter(e.target.value);
-                                setPage(1);  // Reset to first page when filter changes
+                                setPage(1);
                             }}
                         >
                             <MenuItem value="">All</MenuItem>
@@ -291,7 +269,7 @@ export const TaskBoardContainer: React.FC = () => {
                             label="Sort By"
                             onChange={(e) => { 
                                 setSort(e.target.value);
-                                setPage(1);  // Reset to first page when sort changes
+                                setPage(1);
                             }}
                         >
                             <MenuItem value="id,asc">ID (Asc)</MenuItem>

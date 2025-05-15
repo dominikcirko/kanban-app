@@ -8,19 +8,33 @@ const api = axios.create({
     headers: {
         'Content-Type': 'application/json',
     },
+    withCredentials: true  // Add this to handle cookies
 });
 
 // Attach JWT to all requests if present
 api.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem('jwt');
-    if (token) {
-      config.headers = config.headers || {};
-      config.headers['Authorization'] = `Bearer ${token}`;
+    (config) => {
+        const token = localStorage.getItem('jwt');
+        if (token) {
+            config.headers = config.headers || {};
+            config.headers['Authorization'] = `Bearer ${token}`;
+        }
+        return config;
+    },
+    (error) => Promise.reject(error)
+);
+
+// Add response interceptor to handle token expiration
+api.interceptors.response.use(
+    (response) => response,
+    (error) => {
+        if (error.response?.status === 403 && error.response?.data?.message?.includes('expired')) {
+            // Only redirect if token is actually expired
+            localStorage.removeItem('jwt');
+            window.location.href = '/login';
+        }
+        return Promise.reject(error);
     }
-    return config;
-  },
-  (error) => Promise.reject(error)
 );
 
 export const taskApi = {
@@ -63,12 +77,17 @@ export const taskApi = {
         console.log('--- PATCH REQUEST DEBUG ---');
         console.log('Task ID:', id);
         console.log('Patch payload:', JSON.stringify(patch));
-        console.log('JWT:', token);
+        console.log('Raw JWT from localStorage:', token);
         
+        if (!token) {
+            console.error('No JWT token found in localStorage');
+            throw new Error('Authentication required');
+        }
+
         const response = await api.patch<Task>(`/tasks/${id}`, patch, {
             headers: {
-                'Authorization': token ? `Bearer ${token}` : '',
-                'Content-Type': 'application/mergepatch+json'
+                'Content-Type': 'application/mergepatch+json',
+                'Accept': 'application/json'
             }
         });
         
