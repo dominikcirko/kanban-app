@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ThemeProvider, CssBaseline, Card, CardContent, Typography, Button, Stack } from '@mui/material';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { theme } from './theme';
@@ -13,7 +13,6 @@ const AuthLanding: React.FC = () => {
   const [loginOpen, setLoginOpen] = useState(false);
   const [registerOpen, setRegisterOpen] = useState(false);
 
-  // When registration is successful, close register and open login
   const handleRegistered = () => {
     setRegisterOpen(false);
     setLoginOpen(true);
@@ -46,17 +45,40 @@ const AuthLanding: React.FC = () => {
 };
 
 export const App: React.FC = () => {
-  const isAuthenticated = !!localStorage.getItem('jwt');
-  return isAuthenticated ? (
-    <QueryClientProvider client={queryClient}>
-      <ThemeProvider theme={theme}>
-        <CssBaseline />
-        <Layout>
-          <TaskBoardContainer />
-        </Layout>
-      </ThemeProvider>
-    </QueryClientProvider>
-  ) : (
-    <AuthLanding />
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+
+  useEffect(() => {
+    const token = localStorage.getItem('jwt');
+    setIsAuthenticated(!!token);
+    setIsLoading(false);
+
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'jwt') {
+        setIsAuthenticated(!!e.newValue);
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
+
+  if (isLoading) {
+    return null; 
+  }
+
+  return (
+    <ThemeProvider theme={theme}>
+      <CssBaseline />
+      {isAuthenticated ? (
+        <QueryClientProvider client={queryClient}>
+          <Layout>
+            <TaskBoardContainer />
+          </Layout>
+        </QueryClientProvider>
+      ) : (
+        <AuthLanding />
+      )}
+    </ThemeProvider>
   );
 };

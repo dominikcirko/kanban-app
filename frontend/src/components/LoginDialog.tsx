@@ -26,6 +26,11 @@ const LoginDialog: React.FC<LoginDialogProps> = ({ open, onClose }) => {
             }
             if (token) {
                 localStorage.setItem('jwt', token);
+                window.dispatchEvent(new StorageEvent('storage', {
+                    key: 'jwt',
+                    newValue: token,
+                    storageArea: localStorage
+                }));
                 onClose();
                 window.location.reload();
             } else {
