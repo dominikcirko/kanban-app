@@ -1,0 +1,46 @@
+name: CI Pipeline
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Java setup
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '24'
+          
+      - name: Make mvnw executable
+        run: chmod +x ./mvnw
+
+      - name: Maven build
+        run: ./mvnw -f backend/pom.xml clean verify
+        env:
+          TESTCONTAINERS_RYUK_DISABLED: "true"
+  
+      - name: Install xmllint
+        run: sudo apt-get update && sudo apt-get install -y libxml2-utils
+        working-directory: ./backend
+
+      - name: Check test coverage
+        working-directory: ./backend
+        run: |
+          COVERAGE=$(xmllint --xpath "string(//reporting/plugins/plugin[artifactId='jacoco-maven-plugin']/configuration/rules/rule[1]/limits/limit[1]/value)" target/site/jacoco/jacoco.xml 2>/dev/null || echo "0")
+          echo "Coverage: $COVERAGE"
+          if (( $(echo "$COVERAGE < 0.80" | bc -l) )); then
+            echo "Test coverage below 80%!"
+            exit 1
+          fi
+
+      - name: Build Docker image
+        working-directory: ./backend
+        run: docker build -t myapp:latest .

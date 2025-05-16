@@ -1,7 +1,7 @@
 package com.company.kanban.unit.service;
 
-
 import com.company.kanban.controller.TaskController;
+import com.company.kanban.service.implementations.RateLimiterServiceImpl;
 import com.company.kanban.service.interfaces.RateLimiterService;
 import com.company.kanban.service.interfaces.TaskService;
 import org.junit.jupiter.api.Assertions;
@@ -23,13 +23,13 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 
 
 @ExtendWith(MockitoExtension.class)
-public class TaskControllerRateLimitTests {
+public class RateLimiterServiceTests {
 
     @Mock
     TaskService taskService;
 
     @Mock
-    RateLimiterService rateLimiterService;
+    RateLimiterServiceImpl rateLimiterService;
 
     @InjectMocks
     TaskController taskController;
@@ -45,10 +45,12 @@ public class TaskControllerRateLimitTests {
                     if (counter.incrementAndGet() <= allowedRequests) {
                         Supplier<ResponseEntity<?>> supplier = invocation.getArgument(0);
                         return supplier.get();
-                    } else
+                    } else {
                         return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).build();
+                    }
                 });
 
+        // Call controller method directly instead of mockMvc
         for (int i = 0; i < allowedRequests; i++) {
             ResponseEntity<?> response = taskController.getAllTasks(null, null, 0, 10, null);
             Assertions.assertEquals(HttpStatus.OK, response.getStatusCode());
@@ -60,4 +62,3 @@ public class TaskControllerRateLimitTests {
         }
     }
 }
-
