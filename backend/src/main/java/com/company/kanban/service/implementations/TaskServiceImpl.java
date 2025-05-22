@@ -55,9 +55,6 @@ public class TaskServiceImpl implements TaskService {
     @Cacheable(value = "tasks", key = "{#status, #priority, #pageable.pageNumber, #pageable.pageSize}")
     public Page<TaskDTO> getTasks(Status status, Priority priority, Pageable pageable) {
         Page<Task> taskEntitiesPage;
-        long startTime = System.currentTimeMillis();
-
-        long missCount = cacheMisses.incrementAndGet();
 
         if (status != null && priority != null) {
             taskEntitiesPage = taskRepository.findByStatusAndPriority(status, priority, pageable);
@@ -68,12 +65,6 @@ public class TaskServiceImpl implements TaskService {
         } else {
             taskEntitiesPage = taskRepository.findAll(pageable);
         }
-
-        log.info("Cache miss - Fetching tasks from database for status={}, priority={}", status, priority);
-        long endTime = System.currentTimeMillis();
-        log.info("DATABASE ACCESS: Fetched tasks in {}ms (Total cache misses: {}, params: status={}, priority={})",
-                (endTime - startTime), missCount, status, priority);
-
         return taskEntitiesPage.map(taskDtoAssembler::toModel);
     }
 
@@ -133,7 +124,6 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
-    @CacheEvict(value = "tasks", allEntries = true)
     public Pageable buildPageable(int page, int size, String sortParam){
 
         if (sortParam != null && !sortParam.isEmpty()) {

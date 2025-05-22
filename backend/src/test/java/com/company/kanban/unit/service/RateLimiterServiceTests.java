@@ -50,7 +50,6 @@ public class RateLimiterServiceTests {
                     }
                 });
 
-        // Call controller method directly instead of mockMvc
         for (int i = 0; i < allowedRequests; i++) {
             ResponseEntity<?> response = taskController.getAllTasks(null, null, 0, 10, null);
             Assertions.assertEquals(HttpStatus.OK, response.getStatusCode());

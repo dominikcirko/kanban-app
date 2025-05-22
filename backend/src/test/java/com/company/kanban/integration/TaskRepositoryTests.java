@@ -13,6 +13,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
@@ -24,12 +25,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
 
 @Testcontainers
+@ActiveProfiles("test")
 @SpringBootTest
 public class TaskRepositoryTests {
 
     @Container
     @ServiceConnection
-    static PostgreSQLContainer<?> postgreSQLContainer = new PostgreSQLContainer<>("postgres:15");
+    static PostgreSQLContainer<?> postgreSQLContainer = new PostgreSQLContainer<>("postgres:17");
 
     @Autowired
     TaskRepository taskRepository;
@@ -201,11 +203,11 @@ public class TaskRepositoryTests {
     @Transactional
     void TaskRepository_SortTasks_ReturnsSortedTasks() {
 
-        taskRepository.save(createTask("Z Task", "Description", Status.TO_DO, Priority.LOW));    // Z, TODO, LOW
-        taskRepository.save(createTask("A Task", "Description", Status.DONE, Priority.HIGH));    // A, DONE, HIGH
-        taskRepository.save(createTask("M Task", "Description", Status.IN_PROGRESS, Priority.MED)); // M, IN_PROGRESS, MED
-        taskRepository.save(createTask("A Task", "Description", Status.TO_DO, Priority.LOW));    // A, TODO, LOW (duplicate title)
-        taskRepository.save(createTask("A Task", "Description", Status.IN_PROGRESS, Priority.HIGH)); // A, IN_PROGRESS, HIGH (duplicate title)
+        taskRepository.save(createTask("Z Task", "Description", Status.TO_DO, Priority.LOW));
+        taskRepository.save(createTask("A Task", "Description", Status.DONE, Priority.HIGH));
+        taskRepository.save(createTask("M Task", "Description", Status.IN_PROGRESS, Priority.MED));
+        taskRepository.save(createTask("A Task", "Description", Status.TO_DO, Priority.LOW));
+        taskRepository.save(createTask("A Task", "Description", Status.IN_PROGRESS, Priority.HIGH));
 
         Pageable titleAscPageable = PageRequest.of(0, 10, Sort.by("title").ascending());
         List<Task> titleAscTasks = taskRepository.findAll(titleAscPageable).getContent();
@@ -228,7 +230,7 @@ public class TaskRepositoryTests {
         assertThat(multiSortTasks1)
                 .extracting(Task::getTitle, Task::getPriority)
                 .containsExactly(
-                        tuple("A Task", Priority.LOW),   // LOW comes before HIGH alphabetically
+                        tuple("A Task", Priority.LOW),
                         tuple("A Task", Priority.HIGH),
                         tuple("A Task", Priority.HIGH),
                         tuple("M Task", Priority.MED),

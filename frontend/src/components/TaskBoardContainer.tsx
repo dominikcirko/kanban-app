@@ -172,17 +172,14 @@ export const TaskBoardContainer: React.FC = () => {
             currentTasks: localTasks
         });
 
-        // Optimistically update the UI first
         setLocalTasks(prevTasks => 
             prevTasks.map(task => 
                 task.id === taskId ? { ...task, status: newStatus } : task
             )
         );
         
-        // Save the current drag operation so we can recognize it when the server responds
         pendingDragUpdateRef.current = { taskId, newStatus };
 
-        // Update server
         partialUpdateTaskMutation.mutate({
             id: taskId,
             patch: { status: newStatus }

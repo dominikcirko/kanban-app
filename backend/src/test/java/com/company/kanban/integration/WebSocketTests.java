@@ -4,10 +4,14 @@ import com.company.kanban.model.dto.TaskDTO;
 import com.company.kanban.model.entity.Task;
 import com.company.kanban.model.enums.Priority;
 import com.company.kanban.model.enums.Status;
+import com.company.kanban.repository.TaskRepository;
+import com.company.kanban.repository.UserRepository;
+import jakarta.persistence.EntityManagerFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.http.HttpEntity;
@@ -19,12 +23,14 @@ import org.springframework.messaging.simp.stomp.StompFrameHandler;
 import org.springframework.messaging.simp.stomp.StompHeaders;
 import org.springframework.messaging.simp.stomp.StompSession;
 import org.springframework.messaging.simp.stomp.StompSessionHandlerAdapter;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.web.socket.client.standard.StandardWebSocketClient;
 import org.springframework.web.socket.messaging.WebSocketStompClient;
 import org.springframework.web.socket.sockjs.client.SockJsClient;
 import org.springframework.web.socket.sockjs.client.Transport;
 import org.springframework.web.socket.sockjs.client.WebSocketTransport;
 
+import javax.sql.DataSource;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -39,11 +45,23 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 @SpringBootTest(
         webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
         properties = {
-                "kanban.dbUser=postgres",
-                "kanban.dbPassword=postgres"
+                "spring.liquibase.enabled=false",
+                "spring.autoconfigure.exclude=org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration,org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration"
         }
 )
 public class WebSocketTests {
+
+    @MockitoBean
+    private UserRepository userRepository;
+
+    @MockitoBean
+    private TaskRepository taskRepository;
+
+    @MockitoBean
+    private DataSource dataSource;
+
+    @MockitoBean
+    private EntityManagerFactory entityManagerFactory;
 
     @LocalServerPort
     private int port;
