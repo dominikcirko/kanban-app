@@ -25,8 +25,8 @@ jobs:
         run: ./mvnw -f backend/pom.xml clean verify
         env:
           DOCKER_HOST: unix:///var/run/docker.sock
-          TESTCONTAINERS_RYUK_CONTAINER_PRIVILEGED: "true"
-          TESTCONTAINERS_HOST_OVERRIDE: host.docker.internal
+          #TESTCONTAINERS_HOST_OVERRIDE: "host.docker.internal"
+          TESTCONTAINERS_RYUK_DISABLED: "true"
   
       - name: Install xmllint
         run: sudo apt-get update && sudo apt-get install -y libxml2-utils
