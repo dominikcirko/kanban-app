@@ -26,7 +26,7 @@ jobs:
         run: ./mvnw -f backend/pom.xml clean verify
         env:
           DOCKER_HOST: unix:///var/run/docker.sock
-          #TESTCONTAINERS_HOST_OVERRIDE: "host.docker.internal"
+          #TESTCONTAINERS_HOST_OVERRIDE: "host.docker.internal" ----- ONLY FOR LOCAL TESTING USING DOCKER DESKTOP ON WINDOWS OS ----- 
           TESTCONTAINERS_RYUK_DISABLED: "true"
   
       - name: Install xmllint
