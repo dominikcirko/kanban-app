@@ -11,7 +11,19 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
-  app:
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    working_dir: /app
+    command: npm start
+
+  backend:
     build:
       context: ./backend
       dockerfile: Dockerfile
