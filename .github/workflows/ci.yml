@@ -33,15 +33,13 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y libxml2-utils
         working-directory: ./backend
 
-      - name: Check test coverage
-        working-directory: ./backend
-        run: |
-          COVERAGE=$(xmllint --xpath "string(//reporting/plugins/plugin[artifactId='jacoco-maven-plugin']/configuration/rules/rule[1]/limits/limit[1]/value)" target/site/jacoco/jacoco.xml 2>/dev/null || echo "0")
-          echo "Coverage: $COVERAGE"
-          if (( $(echo "$COVERAGE < 0.80" | bc -l) )); then
-            echo "Test coverage below 80%!"
-            exit 1
-          fi
+      - name: Enforce test coverage threshold
+        uses: cicirello/jacoco-badge-generator@v2
+        with:
+          jacoco-csv-file: backend/target/site/jacoco/jacoco.csv
+          jacoco-xml-file: backend/target/site/jacoco/jacoco.xml
+          coverage-threshold: 80
+          fail-if-below-threshold: true
 
       - name: Build Docker image
         working-directory: ./backend
